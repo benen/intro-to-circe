@@ -188,30 +188,21 @@ Relies on an external plugin called [Macro Paradise](https://docs.scala-lang.org
 
 ## Optics
 
-With large documents and cursor, we might have something like:
-
-```scala
-val phoneNum: Option[String] = json.hcursor.
-      downField("order").
-      downField("customer").
-      downField("contactDetails").
-      get[String]("phone").
-      toOption
-```
-
----
-
-## Optics
-
 ```scala
 import io.circe.optics.JsonPath._
-// import io.circe.optics.JsonPath._
 
-val _phoneNum = root.order.customer.contactDetails.phone.string
-// _phoneNum: monocle.Optional[io.circe.Json,String] = monocle.POptional$$anon$1@129eba5a
+val firstNameOptic = root.name.firstName.string
 
-val phoneNum: Option[String] = _phoneNum.getOption(json)
-// phoneNum: Option[String] = Some(0123-456-789)
+val json = io.circe.parser.parse(
+    """{
+      |  "id": 1,
+      |  "name":{
+      |    "firstName":"Benen",
+      |    "surname":"Cahill"
+      |  }
+      |}""".stripMargin)
+
+val firstName: Option[String] = firstName.getOption(json)
 ```
 
 Note: 
