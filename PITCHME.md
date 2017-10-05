@@ -1,15 +1,30 @@
 Circe
 =====
 
+#### A Quick Introduction
+[Benen Cahill](https://github.com/benen)
+
+---
+
 ## What is Circe?
 
 * A library for interacting with Json using FP paradigms
   - exposes a JSON AST (Abstract Syntax Tree)
   - provides decoders instead of parsers
   - decouples parsing implementation (JAWN vs Jackson)
+
+---
+
+## What is Circe?
+
 * Exposes Json through Types
   - better encapsulation of what is and isn't serializable
   - many runtime implementations rely on undocumented behaviors
+
+---
+
+## What is Circe?
+
 * Developed with Performance in mind
   - maintainers not afraid to use mutable state and imperative paradigm where it makes sense
 
@@ -21,7 +36,7 @@ Note:
 
 ## Parsing Json
 
-```
+```scala
 import io.circe._, io.circe.parser._
 
 val rawJson = "{"id": 1, "name": "Benen"}
@@ -29,7 +44,7 @@ val rawJson = "{"id": 1, "name": "Benen"}
 val parsedJson: Either[ParsingFailure, Json] =  parse(rawJson) 
 ```
 
-Notes: 
+Note: 
 
 * At it's more basic level, provides a Json AST
 * No runtime exceptions, all encapsulated in Either
@@ -39,15 +54,19 @@ Notes:
 
 ## Traversing Json
 
-```
+```scala
+val doc = """{"id": 1, "name":{"firstName":"Benen","surname":"Cahill"}}"""
+
 val cursor: HCursor = doc.hcursor
+
 val baz: Decoder.Result[Double] =
-  cursor.downField("values").downField("baz").as[Double]
+  cursor.downField("name").downField("firstName").as[String]
+
 val reversedNameCursor: ACursor =
-  cursor.downField("name").withFocus(_.mapString(_.reverse))
+  cursor.downField("name").downField("firstName").withFocus(_.mapString(_.reverse))
 ```
 
-Notes:
+Note:
 
 * Provides an optional Optics module 
 
@@ -72,7 +91,7 @@ Note:
 
 ## Manual Specification
 
-```
+```scala
 implicit val encodeUser: Encoder[User] = new Encoder[User] {
   final def apply(user: User): Json = Json.obj(
     ("id", Json.fromInt(user.id)),
@@ -89,7 +108,7 @@ implicit val encodeUser: Encoder[User] =
 
 ## Manual Specification
 
-```
+```scala
 implicit val decoderUser: Decoder[User] = new Decoder[User] {
   final def apply(c: HCursor): Decoder.Result[User] = 
     for {
@@ -107,7 +126,7 @@ implicit val decodeUser: Decoder[User] =
 
 ## Fully Automatic Derivation
 
-```
+```scala
 import io.circe.generic.auto._
 
 case class User(id: Int, name: String)
@@ -129,7 +148,7 @@ Note:
 
 ## Semi-Automatic Derviation
 
-```
+```scala
 implicit val encodeUser: Encoder[User] = deriveEncoder[User]
 
 implicit val decodeUser: Decoder[User] = deriveDecoder[User]
@@ -150,7 +169,7 @@ Note:
 
 ## Annotations driven Derivation
 
-```
+```scala
 import io.circe.generic.JsonCodec, io.circe.syntax._
 
 @JsonCodec case class User(id: Int, name: String)
@@ -166,7 +185,7 @@ Relies on an external plugin called [Macro Paradise](https://docs.scala-lang.org
 
 With large documents and cursor, we might have something like:
 
-```
+```scala
 val phoneNum: Option[String] = json.hcursor.
       downField("order").
       downField("customer").
@@ -179,7 +198,7 @@ val phoneNum: Option[String] = json.hcursor.
 
 ## Optics
 
-```
+```scala
 import io.circe.optics.JsonPath._
 // import io.circe.optics.JsonPath._
 
@@ -198,7 +217,7 @@ Note:
 
 ## Incomplete Decoders
 
-```
+```scala
 case class PartialUser(name: String) {
   def toUser(id: Int) = User(id, name)
 }
@@ -238,15 +257,6 @@ val benen = partial.map(_(1))
 Note: 
 
 * Circe uses a right biased Either, 2.10 and 2.11 will need to import cats Either
-
----
-
-## Bonus Feature: Lifting to Applicative
-
-```
-
-
-```
 
 ---
 
