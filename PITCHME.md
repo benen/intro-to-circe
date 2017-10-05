@@ -39,7 +39,7 @@ Note:
 ```scala
 import io.circe._, io.circe.parser._
 
-val rawJson = "{"id": 1, "name": "Benen"}
+val rawJson = """{"id": 1, "name": "Benen"}"""
 
 val parsedJson: Either[ParsingFailure, Json] =  parse(rawJson) 
 ```
@@ -55,20 +55,25 @@ Note:
 ## Traversing Json
 
 ```scala
-val doc = """{"id": 1, "name":{"firstName":"Benen","surname":"Cahill"}}"""
+  val doc = io.circe.parser.parse(
+    """{
+      |  "id": 1,
+      |  "name":{
+      |    "firstName":"Benen",
+      |    "surname":"Cahill"
+      |  }
+      |}""".stripMargin)
 
-val cursor: HCursor = doc.hcursor
+  val cursor: HCursor = doc.getOrElse(Json.Null).hcursor
 
-val baz: Decoder.Result[Double] =
-  cursor.downField("name").downField("firstName").as[String]
+  val name: Decoder.Result[String] =
+    cursor.downField("name").downField("firstName").as[String]
 
-val reversedNameCursor: ACursor =
-  cursor.downField("name").downField("firstName").withFocus(_.mapString(_.reverse))
+  val reversed: ACursor =
+    cursor.downField("name").downField("firstName").withFocus(_.mapString(_.reverse))
+
+  println(reversedNameCursor.top)
 ```
-
-Note:
-
-* Provides an optional Optics module 
 
 ---
 
@@ -228,6 +233,8 @@ val partial = decode[Int => User](posted)
 
 val benen = partial.map(_(1)) 
 ```
+
+---
 
 ## Why use Circe? 
 
